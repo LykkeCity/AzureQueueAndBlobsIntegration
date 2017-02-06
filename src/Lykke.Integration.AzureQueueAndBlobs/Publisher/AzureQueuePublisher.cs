@@ -1,132 +1,91 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Autofac;
 using Common;
 using Common.Log;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Lykke.Integration.AzureQueueAndBlobs.Publisher
 {
 
-    public interface IAzureQueueSerializer<in TModel>
+    public interface IAzureQueueAndBlobSerializer<in TModel>
     {
         byte[] Serialize(TModel model);
     }
 
-    public class AzureQueuePublisher<TModel> : IStartable, IMessageProducer<TModel>
+    public class AzureQueueAndBlobPublisher<TModel> : TimerPeriod, IMessageProducer<TModel>
     {
-        private readonly string _applicationName;
         private readonly AzureQueueAndBlobIntegrationSettings _settings;
 
-        private IAzureQueueSerializer<TModel> _serializer;
-        private ILog _log;
+        private IAzureQueueAndBlobSerializer<TModel> _serializer;
 
-        public AzureQueuePublisher(string applicationName, AzureQueueAndBlobIntegrationSettings settings)
+        public AzureQueueAndBlobPublisher(string applicationName, 
+            AzureQueueAndBlobIntegrationSettings settings):base(applicationName, 1000)
         {
-            _applicationName = applicationName;
             _settings = settings;
             _settings.QueueName = _settings.QueueName.ToLower();
         }
 
         #region Config
 
-        public AzureQueuePublisher<TModel> SetLogger(ILog log)
-        {
-            _log = log;
-            return this;
-        }
-
-        public AzureQueuePublisher<TModel> SetSerializer(IAzureQueueSerializer<TModel> serializer)
+        public AzureQueueAndBlobPublisher<TModel> SetSerializer(IAzureQueueAndBlobSerializer<TModel> serializer)
         {
             _serializer = serializer;
             return this;
         }
 
-
-        #endregion
-
-
-        private Task _task;
-
-        private async Task TheTask()
+        public new AzureQueueAndBlobPublisher<TModel> SetLogger(ILog log)
         {
-
-            while (_task != null)
-                try
-                {
-
-                    var queue = await _settings.GetAzureCloudQueueAsync();
-                    var blobContainer = await _settings.GetAzureCloudBlobContainerAsync();
-
-                    while (true)
-                    {
-                        var message = _queue.Dequeue();
-                        if (message == null)
-                        {
-                            if (_task == null)
-                                break;
-
-                            await Task.Delay(1000);
-                            continue;
-                        }
-
-                        var dataToQueue = _serializer.Serialize(message.Item);
-                        var messageId = Guid.NewGuid().ToString("N");
-
-                        var blockBlob = blobContainer.GetBlockBlobReference(messageId);
-
-                        await blockBlob.UploadFromByteArrayAsync(dataToQueue,0, dataToQueue.Length);
-                        await queue.AddMessageAsync(new CloudQueueMessage(blockBlob.Uri.AbsoluteUri));
-
-                        message.Compliete();
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    await _log.WriteErrorAsync(_applicationName, "TheTask", "", e);
-                }
-        }
-
-
-        public AzureQueuePublisher<TModel> Start()
-        {
-            if (_task != null)
-                return this;
-
-            if (_log == null)
-                throw new Exception("ILog required for: "+_applicationName);
-
-            if (_serializer == null)
-                throw new Exception("IAzureQueueSerializer required for: " + _applicationName);
-
-            _task = TheTask();
-
+            base.SetLogger(log);
             return this;
         }
 
-        void IStartable.Start()
-        {
-            Start();
-        }
+        #endregion
 
-
-        public void Stop()
-        {
-            if (_task == null)
-                return;
-
-            var task = _task;
-            _task = null;
-            task.Wait();
-        }
-
+        private CloudQueue _cloudQueue;
+        private CloudBlobContainer _blobContainer;
         private readonly QueueWithConfirmation<TModel> _queue = new QueueWithConfirmation<TModel>();
+
+        public override async Task Execute()
+        {
+            if (_cloudQueue == null)
+                _cloudQueue = await _settings.GetAzureCloudQueueAsync();
+
+            if (_blobContainer == null)
+                _blobContainer = await _settings.GetAzureCloudBlobContainerAsync();
+
+            while (true)
+            {
+                var message = _queue.Dequeue();
+
+                if (message == null)
+                    break;
+
+                var dataToQueue = _serializer.Serialize(message.Item);
+                var messageId = Guid.NewGuid().ToString("N");
+
+                var blockBlob = _blobContainer.GetBlockBlobReference(messageId);
+
+                await blockBlob.UploadFromByteArrayAsync(dataToQueue, 0, dataToQueue.Length);
+                await _cloudQueue.AddMessageAsync(new CloudQueueMessage(messageId));
+
+            }
+
+        }
+
+
+        public new AzureQueueAndBlobPublisher<TModel> Start()
+        {
+            base.Start();
+            return this;
+        }
 
         public Task ProduceAsync(TModel message)
         {
             _queue.Enqueue(message);
             return Task.FromResult(0);
         }
+
     }
+
 }

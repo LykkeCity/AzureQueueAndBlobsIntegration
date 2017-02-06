@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Lykke.Integration.AzureQueueAndBlobs", "src\Lykke.Integration.AzureQueueAndBlobs\Lykke.Integration.AzureQueueAndBlobs.xproj", "{450598DC-AA5D-4106-8D56-F66F0E9697A4}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TestInvoke", "src\TestInvoke\TestInvoke.xproj", "{046C79B5-A976-4D9C-9356-39AD4EAD8DA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,11 +24,16 @@ Global
 		{450598DC-AA5D-4106-8D56-F66F0E9697A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{450598DC-AA5D-4106-8D56-F66F0E9697A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{450598DC-AA5D-4106-8D56-F66F0E9697A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046C79B5-A976-4D9C-9356-39AD4EAD8DA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046C79B5-A976-4D9C-9356-39AD4EAD8DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046C79B5-A976-4D9C-9356-39AD4EAD8DA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046C79B5-A976-4D9C-9356-39AD4EAD8DA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{450598DC-AA5D-4106-8D56-F66F0E9697A4} = {4C32D695-9E56-4676-8F52-DEE61C754C24}
+		{046C79B5-A976-4D9C-9356-39AD4EAD8DA2} = {4C32D695-9E56-4676-8F52-DEE61C754C24}
 	EndGlobalSection
 EndGlobal
