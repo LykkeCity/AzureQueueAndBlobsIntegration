@@ -16,13 +16,13 @@ namespace Lykke.Integration.AzureQueueAndBlobs.Subscriber
         TModel Deserialize(byte[] data);
     }
 
-    public class AzureQueueSubscriber<TModel> : TimerPeriod, IMessageConsumer<TModel>
+    public class AzureQueueAndBlobSubscriber<TModel> : TimerPeriod, IMessageConsumer<TModel>
     {
         private readonly AzureQueueAndBlobIntegrationSettings _settings;
         private readonly bool _autoDeleteFromBlob;
         private IAzureQueueAndBlobDeserializer<TModel> _deserializer;
 
-        public AzureQueueSubscriber(string applicationName, AzureQueueAndBlobIntegrationSettings settings, 
+        public AzureQueueAndBlobSubscriber(string applicationName, AzureQueueAndBlobIntegrationSettings settings, 
             bool autoDeleteFromBlob):base(applicationName, 1000)
         {
             _settings = settings;
@@ -31,13 +31,13 @@ namespace Lykke.Integration.AzureQueueAndBlobs.Subscriber
 
         #region Configure
 
-        public AzureQueueSubscriber<TModel> SetDeserializer(IAzureQueueAndBlobDeserializer<TModel> deserializer)
+        public AzureQueueAndBlobSubscriber<TModel> SetDeserializer(IAzureQueueAndBlobDeserializer<TModel> deserializer)
         {
             _deserializer = deserializer;
             return this;
         }
 
-        public new AzureQueueSubscriber<TModel> SetLogger(ILog log)
+        public new AzureQueueAndBlobSubscriber<TModel> SetLogger(ILog log)
         {
             base.SetLogger(log);
             return this;
@@ -88,7 +88,7 @@ namespace Lykke.Integration.AzureQueueAndBlobs.Subscriber
 
 
 
-        public new AzureQueueSubscriber<TModel> Start()
+        public new AzureQueueAndBlobSubscriber<TModel> Start()
         {
             base.Start();
             return this;
@@ -102,7 +102,7 @@ namespace Lykke.Integration.AzureQueueAndBlobs.Subscriber
             Subscribe(callback);
         }
 
-        public AzureQueueSubscriber<TModel> Subscribe(Func<TModel, Task> callback)
+        public AzureQueueAndBlobSubscriber<TModel> Subscribe(Func<TModel, Task> callback)
         {
             _callbacks.Add(callback);
             return this;

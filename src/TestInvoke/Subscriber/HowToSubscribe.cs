@@ -20,13 +20,13 @@ namespace TestInvoke.Subscriber
     public static class HowToSubscribe
     {
 
-        private static AzureQueueSubscriber<MyModel> _publisher;
+        private static AzureQueueAndBlobSubscriber<MyModel> _publisher;
         public static void Example(AzureQueueAndBlobIntegrationSettings settings)
         {
             var log = new LogToConsole();
 
             _publisher
-                = new AzureQueueSubscriber<MyModel>("myname", settings, true)
+                = new AzureQueueAndBlobSubscriber<MyModel>("myname", settings, true)
                 .SetLogger(log)
                 .SetDeserializer(new TestDeserializer())
                 .Subscribe(Handle)
